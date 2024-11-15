@@ -1,45 +1,65 @@
 import React, { useEffect, useState } from 'react'
 import { PagesList } from './PagesList'
-
-// import and prepend the api url to any fetch calls
+import { Page } from './Page'
 import apiURL from '../api'
 
 export const App = () => {
-  const [pages, setPages] = useState([])
-  const [authors, setAuthors] = useState([])
+  const [pages, setPages] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [selectedPage, setSelectedPage] = useState(null);
 
   useEffect(() => {
-    async function fetchPages () {
+    async function fetchPages() {
       try {
-        const response = await fetch(`${apiURL}/wiki`)
-        const pagesData = await response.json()
-        console.log(pagesData)
-        setPages(pagesData)
+        const response = await fetch(`${apiURL}/wiki`);
+        const pagesData = await response.json();
+        setPages(pagesData);
       } catch (err) {
-        console.log('Oh no an error! ', err)
+        console.log('Oh no an error!', err);
       }
     }
 
-    async function fetchAuthors () {
+    async function fetchAuthors() {
       try {
-        const response = await fetch(`${apiURL}/users`)
-        const authorsData = await response.json()
-        console.log(authorsData)  // logs the fetched authors data to the console for debugging purposes, remove this line in production
-        setAuthors(authorsData)
+        const response = await fetch(`${apiURL}/users`);
+        const authorsData = await response.json();
+        setAuthors(authorsData);
       } catch (err) {
-        console.log('Oh no an error! ', err)
+        console.log('Oh no an error!', err);
       }
     }
 
-    fetchPages()
-    fetchAuthors()
-  }, [])
+    fetchPages();
+    fetchAuthors();
+  }, []);
+
+  const onReadMore = async (page) => {
+    try {
+      const response = await fetch(`${apiURL}/wiki/${page.slug}`);
+      const fullPageData = await response.json();
+      setSelectedPage(fullPageData); // Set the fully loaded article as the selected page
+    } catch (err) {
+      console.log('Error fetching full article details:', err);
+    }
+  };
+
 
   return (
-		<main>
+    <main>
       <h1>WikiVerse</h1>
-			<h2>An interesting 📚</h2>
-			<PagesList pages={pages} authors={authors}/>
-		</main>
-  )
-}
+      <h2>An interesting 📚</h2>
+
+      {selectedPage ? (
+        <Page
+          page={selectedPage}
+          author={authors.find(author => author.id === selectedPage.authorId)}
+          onBack={() => setSelectedPage(null)}
+          detailed
+        />
+      ) : (
+        <PagesList pages={pages} authors={authors} onReadMore={onReadMore} />
+      )}
+    </main>
+  );
+};
+
