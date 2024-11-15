@@ -66,6 +66,23 @@ export const App = () => {
     }
   };
 
+  const handleDelete = async (slug) => {
+    try {
+      const response = await fetch(`${apiURL}/wiki/${slug}`, {
+        method: "DELETE",
+      });
+      
+      if (response.ok) {
+        await fetchPages(); 
+        setSelectedPage(null);
+      } else {
+        console.log('Failed to delete article');
+      }
+    } catch (err) {
+      console.log('Error deleting article:', err);
+    }
+  };
+
 
   return (
     <main>
@@ -79,6 +96,7 @@ export const App = () => {
           page={selectedPage}
           author={authors.find(author => author.id === selectedPage.authorId)}
           onBack={() => setSelectedPage(null)}
+          onDelete={handleDelete}
           detailed
         />
       ) : (
